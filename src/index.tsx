@@ -10,6 +10,7 @@ export type LazyProps = {
   didHydrate?: VoidFunction;
   promise?: Promise<any>;
   on?: (keyof HTMLElementEventMap)[] | keyof HTMLElementEventMap;
+  whenScroll?: boolean;
   children: React.ReactElement;
 };
 
@@ -40,6 +41,7 @@ function LazyHydrate(props: Props) {
     whenVisible,
     promise, // pass a promise which hydrates
     on = [],
+    whenScroll,
     children,
     didHydrate, // callback for hydration
     ...rest
@@ -51,7 +53,8 @@ function LazyHydrate(props: Props) {
     !whenIdle &&
     !whenVisible &&
     !on.length &&
-    !promise
+    !promise &&
+    !whenScroll
   ) {
     console.error(
       `LazyHydration: Enable atleast one trigger for hydration.\n` +
@@ -134,6 +137,9 @@ function LazyHydrate(props: Props) {
           clearTimeout(id);
         });
       }
+    }
+    if(whenScroll) {
+      document.addEventListener('scroll', hydrate, {once: true, passive: true});
     }
 
     const events = ([] as Array<keyof HTMLElementEventMap>).concat(on);
