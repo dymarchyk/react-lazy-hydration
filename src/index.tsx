@@ -138,8 +138,11 @@ function LazyHydrate(props: Props) {
         });
       }
     }
-    if(whenScroll) {
-      document.addEventListener('scroll', hydrate, {once: true, passive: true});
+    if (whenScroll) {
+      document.addEventListener("scroll", hydrate, {
+        once: true,
+        passive: true
+      });
     }
 
     const events = ([] as Array<keyof HTMLElementEventMap>).concat(on);
@@ -169,7 +172,7 @@ function LazyHydrate(props: Props) {
   const WrapperElement = ((typeof noWrapper === "string"
     ? noWrapper
     : "div") as unknown) as React.FC<React.HTMLProps<HTMLElement>>;
-
+  console.log({ hydrated, noWrapper });
   if (hydrated) {
     if (noWrapper) {
       return children;

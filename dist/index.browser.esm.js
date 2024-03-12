@@ -122,6 +122,10 @@ function LazyHydrate(props) {
     return cleanup;
   }, [hydrated, on, ssrOnly, whenIdle, whenVisible, didHydrate, promise, noWrapper]);
   var WrapperElement = typeof noWrapper === "string" ? noWrapper : "div";
+  console.log({
+    hydrated: hydrated,
+    noWrapper: noWrapper
+  });
 
   if (hydrated) {
     if (noWrapper) {
