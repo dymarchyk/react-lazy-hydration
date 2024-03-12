@@ -27,10 +27,12 @@ function LazyHydrate(props) {
       on = _props$on === void 0 ? [] : _props$on,
       whenScroll = props.whenScroll,
       children = props.children,
+      _props$onWindow = props.onWindow,
+      onWindow = _props$onWindow === void 0 ? [] : _props$onWindow,
       didHydrate = props.didHydrate,
-      rest = _objectWithoutPropertiesLoose(props, ["noWrapper", "ssrOnly", "whenIdle", "whenVisible", "promise", "on", "whenScroll", "children", "didHydrate"]);
+      rest = _objectWithoutPropertiesLoose(props, ["noWrapper", "ssrOnly", "whenIdle", "whenVisible", "promise", "on", "whenScroll", "children", "onWindow", "didHydrate"]);
 
-  if ('production' !== process.env.NODE_ENV && !ssrOnly && !whenIdle && !whenVisible && !on.length && !promise && !whenScroll) {
+  if ('production' !== process.env.NODE_ENV && !ssrOnly && !whenIdle && !whenVisible && !on.length && !onWindow.length && !promise && !whenScroll) {
     console.error("LazyHydration: Enable atleast one trigger for hydration.\n" + "If you don't want to hydrate, use ssrOnly");
   }
 
@@ -105,14 +107,22 @@ function LazyHydrate(props) {
     }
 
     if (whenScroll) {
-      document.addEventListener('scroll', hydrate, {
+      document.addEventListener("scroll", hydrate, {
         once: true,
         passive: true
       });
     }
 
-    var events = [].concat(on);
-    events.forEach(function (event) {
+    onWindow.forEach(function (ev) {
+      window.addEventListener(ev, hydrate, {
+        once: true,
+        passive: true
+      });
+      cleanupFns.push(function () {
+        window.removeEventListener(ev, hydrate, {});
+      });
+    });
+    on.forEach(function (event) {
       rootElement.addEventListener(event, hydrate, {
         once: true,
         passive: true
@@ -124,10 +134,6 @@ function LazyHydrate(props) {
     return cleanup;
   }, [hydrated, on, ssrOnly, whenIdle, whenVisible, didHydrate, promise, noWrapper]);
   var WrapperElement = typeof noWrapper === "string" ? noWrapper : "div";
-  console.log({
-    hydrated: hydrated,
-    noWrapper: noWrapper
-  });
 
   if (hydrated) {
     if (noWrapper) {

@@ -10,6 +10,7 @@ export type LazyProps = {
   didHydrate?: VoidFunction;
   promise?: Promise<any>;
   on?: (keyof HTMLElementEventMap)[] | keyof HTMLElementEventMap;
+  onWindow?: (keyof HTMLElementEventMap)[] | keyof HTMLElementEventMap;
   whenScroll?: boolean;
   children: React.ReactElement;
 };
@@ -43,6 +44,7 @@ function LazyHydrate(props: Props) {
     on = [],
     whenScroll,
     children,
+    onWindow = [],
     didHydrate, // callback for hydration
     ...rest
   } = props;
@@ -53,6 +55,7 @@ function LazyHydrate(props: Props) {
     !whenIdle &&
     !whenVisible &&
     !on.length &&
+    !onWindow.length &&
     !promise &&
     !whenScroll
   ) {
@@ -81,6 +84,7 @@ function LazyHydrate(props: Props) {
     const rootElement = childRef.current;
 
     const cleanupFns: VoidFunction[] = [];
+
     function cleanup() {
       cleanupFns.forEach(fn => {
         fn();
@@ -145,9 +149,17 @@ function LazyHydrate(props: Props) {
       });
     }
 
-    const events = ([] as Array<keyof HTMLElementEventMap>).concat(on);
+    (onWindow as Array<keyof HTMLElementEventMap>).forEach(ev => {
+      window.addEventListener(ev, hydrate, {
+        once: true,
+        passive: true
+      });
+      cleanupFns.push(() => {
+        window.removeEventListener(ev, hydrate, {});
+      });
+    });
 
-    events.forEach(event => {
+    (on as Array<keyof HTMLElementEventMap>).forEach(event => {
       rootElement.addEventListener(event, hydrate, {
         once: true,
         passive: true
@@ -172,7 +184,7 @@ function LazyHydrate(props: Props) {
   const WrapperElement = ((typeof noWrapper === "string"
     ? noWrapper
     : "div") as unknown) as React.FC<React.HTMLProps<HTMLElement>>;
-  console.log({ hydrated, noWrapper });
+
   if (hydrated) {
     if (noWrapper) {
       return children;
